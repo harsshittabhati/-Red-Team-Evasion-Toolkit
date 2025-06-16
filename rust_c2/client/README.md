@@ -38,8 +38,9 @@ pip install flask cryptography
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 python3 server.py
 ```
+(Follow TLS_cert_setup if required)
 
-![image](https://github.com/user-attachments/assets/1d8f43b2-32fd-415c-89ff-939fbb74b439)
+![image](https://github.com/user-attachments/assets/64a0e91f-92b2-47f0-87ec-336141a639de)
 
 ### 2. Setup Client (Rust Agent)
 ```
@@ -49,6 +50,8 @@ cargo build --release
 ./target/release/client
 ```
 ![image](https://github.com/user-attachments/assets/e4bf0208-d6f1-49cf-b2ec-b3314e7f7d98)
+
+![image](https://github.com/user-attachments/assets/1d8f43b2-32fd-415c-89ff-939fbb74b439)
 
 NOTE: Change the IP address in main.rs to your target.
 
