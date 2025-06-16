@@ -1,48 +1,60 @@
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
-import com.microsoft.graph.models.User;
+import com.microsoft.graph.models.DirectoryRole;
+import com.microsoft.graph.models.RoleTemplate;
 import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.requests.DirectoryRoleCollectionPage;
 import okhttp3.Request;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class AzureADFuzzer {
     public static void main(String[] args) {
-        // Step 1: Define credentials
-        final String clientId = "YOUR_CLIENT_ID";
-        final String clientSecret = "YOUR_CLIENT_SECRET";
-        final String tenantId = "YOUR_TENANT_ID";
+        String clientId = System.getenv("AZURE_CLIENT_ID");
+        String clientSecret = System.getenv("AZURE_CLIENT_SECRET");
+        String tenantId = System.getenv("AZURE_TENANT_ID");
 
-        // Step 2: Authenticate
-        ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .tenantId(tenantId)
-                .build();
+        if (clientId == null || clientSecret == null || tenantId == null) {
+            System.err.println("❌ Please set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID environment variables.");
+            return;
+        }
 
-        List<String> scopes = Arrays.asList("https://graph.microsoft.com/.default");
-
-        TokenCredentialAuthProvider authProvider = new TokenCredentialAuthProvider(scopes, clientSecretCredential);
-
-        GraphServiceClient<Request> graphClient = GraphServiceClient
-                .builder()
-                .authenticationProvider(authProvider)
-                .buildClient();
-
-        // Step 3: Attempt enumeration
         try {
-            System.out.println("== Azure AD Fuzzing Started ==");
+            System.out.println("🔐 Authenticating to Microsoft Graph...");
 
-            // Enumerate users
-            List<User> users = graphClient.users().buildRequest().get().getCurrentPage();
-            for (User user : users) {
-                System.out.println("User: " + user.displayName + " | ID: " + user.id + " | Mail: " + user.mail);
+            ClientSecretCredential credential = new ClientSecretCredentialBuilder()
+                    .clientId(clientId)
+                    .clientSecret(clientSecret)
+                    .tenantId(tenantId)
+                    .build();
+
+            TokenCredentialAuthProvider authProvider =
+                    new TokenCredentialAuthProvider(Arrays.asList("https://graph.microsoft.com/.default"), credential);
+
+            GraphServiceClient<Request> graphClient =
+                    GraphServiceClient.builder()
+                            .authenticationProvider(authProvider)
+                            .buildClient();
+
+            System.out.println("✅ Authentication successful.");
+            System.out.println("🔍 Fetching directory roles assigned to users...");
+
+            DirectoryRoleCollectionPage rolesPage = graphClient.directoryRoles()
+                    .buildRequest()
+                    .get();
+
+            for (DirectoryRole role : rolesPage.getCurrentPage()) {
+                System.out.println("📌 Role: " + role.displayName);
+                System.out.println("  🔗 Role Template ID: " + role.roleTemplateId);
+                System.out.println("  🧾 Description: " + role.description);
+                System.out.println("------------------------------");
             }
 
+            System.out.println("✅ Fuzzing completed.");
+
         } catch (Exception e) {
-            System.out.println("Error during fuzzing: " + e.getMessage());
+            System.err.println("❗ Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
