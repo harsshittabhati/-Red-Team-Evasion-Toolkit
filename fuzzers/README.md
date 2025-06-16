@@ -55,6 +55,7 @@ Then run the script:
 python3 aws_cloud_recon.py
 python3 aws_iam_fuzzer.py
 ```
+![image](https://github.com/user-attachments/assets/c5beda34-d9b0-4140-bd31-657d761cd771)
 
 
 ## Step 3: Extract Azure Credentials
@@ -88,9 +89,11 @@ Ensure you are in the same directory as your pom.xml, then run:
 ```
 mvn clean compile
 ```
+![image](https://github.com/user-attachments/assets/6fedd788-04fc-47fd-96a9-1afd3f79b072)
 
 Then run:
 
 ```
 mvn exec:java -Dexec.mainClass="AzureADFuzzer"
 ```
+![image](https://github.com/user-attachments/assets/3c50deb5-96fa-477b-83a9-16f89c92cbbf)
