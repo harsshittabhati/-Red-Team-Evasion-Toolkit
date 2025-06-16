@@ -1,0 +1,12 @@
+/* ----------- TLS Certificate Setup ----------- */
+
+# Run these commands to generate certificates
+
+openssl req -x509 -newkey rsa:2048 -keyout ca.key -out ca.crt -days 365 -nodes -subj "/CN=C2Root"
+openssl req -newkey rsa:2048 -nodes -keyout client.key -out client.csr -subj "/CN=RustClient"
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365
+openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile ca.crt -passout pass:password
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem -subj "/CN=C2Server"
+
+# Place ca.crt and client.pfx in Rust client dir
+# Place cert.pem and key.pem in Python server dir
